@@ -1,6 +1,6 @@
 /**
  * Minesweeper Duel - Main Application JavaScript
- * Handles SPA routing, UI interactions, and mock data
+ * Handles SPA routing, UI interactions, and full Minesweeper game logic
  */
 
 // ============================================
@@ -10,6 +10,10 @@ const App = {
     currentView: 'home',
     user: null,
     isNavOpen: false,
+    gameSettings: {
+        difficulty: 'intermediate',
+        playerName: 'Player',
+    },
 };
 
 // ============================================
@@ -61,6 +65,15 @@ const MockData = {
 };
 
 // ============================================
+// DIFFICULTY SETTINGS
+// ============================================
+const DifficultySettings = {
+    beginner: { rows: 9, cols: 9, mines: 10, name: 'Beginner' },
+    intermediate: { rows: 16, cols: 16, mines: 40, name: 'Intermediate' },
+    expert: { rows: 16, cols: 30, mines: 99, name: 'Expert' },
+};
+
+// ============================================
 // ROUTER
 // ============================================
 const Router = {
@@ -70,37 +83,31 @@ const Router = {
         play: 'view-play',
         profile: 'view-profile',
         faq: 'view-faq',
+        game: 'view-game',
     },
 
     init() {
-        // Handle hash changes
         window.addEventListener('hashchange', () => this.handleRoute());
-        // Handle initial route
         this.handleRoute();
     },
 
     handleRoute() {
-        const hash = window.location.hash.slice(2) || 'home'; // Remove #/ prefix
+        const hash = window.location.hash.slice(2) || 'home';
         const viewId = this.routes[hash] || this.routes.home;
 
         this.showView(viewId);
         this.updateNavLinks(hash);
         App.currentView = hash;
 
-        // Close mobile nav on route change
         UI.closeNav();
-
-        // Scroll to top on route change
         window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
     showView(viewId) {
-        // Hide all views
         document.querySelectorAll('.view').forEach(view => {
             view.classList.remove('active');
         });
 
-        // Show target view
         const targetView = document.getElementById(viewId);
         if (targetView) {
             targetView.classList.add('active');
@@ -117,6 +124,420 @@ const Router = {
 
     navigate(route) {
         window.location.hash = `/${route}`;
+    },
+};
+
+// ============================================
+// MINESWEEPER GAME ENGINE
+// ============================================
+const Game = {
+    board: [],
+    rows: 16,
+    cols: 16,
+    mines: 40,
+    minesRemaining: 40,
+    cellsRemaining: 0,
+    gameOver: false,
+    gameWon: false,
+    firstClick: true,
+    timer: null,
+    seconds: 0,
+    clicks: 0,
+
+    // Initialize a new game
+    init(difficulty = 'intermediate') {
+        const settings = DifficultySettings[difficulty] || DifficultySettings.intermediate;
+        this.rows = settings.rows;
+        this.cols = settings.cols;
+        this.mines = settings.mines;
+        this.minesRemaining = settings.mines;
+        this.cellsRemaining = (this.rows * this.cols) - this.mines;
+        this.gameOver = false;
+        this.gameWon = false;
+        this.firstClick = true;
+        this.seconds = 0;
+        this.clicks = 0;
+        this.board = [];
+
+        // Clear any existing timer
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+
+        // Create empty board
+        for (let r = 0; r < this.rows; r++) {
+            this.board[r] = [];
+            for (let c = 0; c < this.cols; c++) {
+                this.board[r][c] = {
+                    mine: false,
+                    revealed: false,
+                    flagged: false,
+                    adjacentMines: 0,
+                };
+            }
+        }
+
+        // Update UI
+        this.updateDifficultyBadge(settings.name);
+        this.updateStats();
+        this.render();
+        this.hideModal();
+    },
+
+    // Place mines after first click (to ensure first click is safe)
+    placeMines(safeRow, safeCol) {
+        let placed = 0;
+        while (placed < this.mines) {
+            const r = Math.floor(Math.random() * this.rows);
+            const c = Math.floor(Math.random() * this.cols);
+
+            // Don't place mine on first click or adjacent cells
+            const isSafeZone = Math.abs(r - safeRow) <= 1 && Math.abs(c - safeCol) <= 1;
+
+            if (!this.board[r][c].mine && !isSafeZone) {
+                this.board[r][c].mine = true;
+                placed++;
+            }
+        }
+
+        // Calculate adjacent mine counts
+        for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+                if (!this.board[r][c].mine) {
+                    this.board[r][c].adjacentMines = this.countAdjacentMines(r, c);
+                }
+            }
+        }
+    },
+
+    // Count mines in adjacent cells
+    countAdjacentMines(row, col) {
+        let count = 0;
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                const r = row + dr;
+                const c = col + dc;
+                if (r >= 0 && r < this.rows && c >= 0 && c < this.cols) {
+                    if (this.board[r][c].mine) count++;
+                }
+            }
+        }
+        return count;
+    },
+
+    // Handle cell click (reveal)
+    revealCell(row, col) {
+        if (this.gameOver) return;
+
+        const cell = this.board[row][col];
+        if (cell.revealed || cell.flagged) return;
+
+        // First click - place mines and start timer
+        if (this.firstClick) {
+            this.placeMines(row, col);
+            this.startTimer();
+            this.firstClick = false;
+        }
+
+        this.clicks++;
+        cell.revealed = true;
+
+        if (cell.mine) {
+            // Game over - hit a mine
+            this.endGame(false, row, col);
+            return;
+        }
+
+        this.cellsRemaining--;
+
+        // If no adjacent mines, reveal neighbors recursively
+        if (cell.adjacentMines === 0) {
+            this.revealAdjacentCells(row, col);
+        }
+
+        // Check for win
+        if (this.cellsRemaining === 0) {
+            this.endGame(true);
+            return;
+        }
+
+        this.updateStats();
+        this.renderCell(row, col);
+    },
+
+    // Reveal adjacent cells (flood fill for empty cells)
+    revealAdjacentCells(row, col) {
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                const r = row + dr;
+                const c = col + dc;
+                if (r >= 0 && r < this.rows && c >= 0 && c < this.cols) {
+                    const adjCell = this.board[r][c];
+                    if (!adjCell.revealed && !adjCell.mine && !adjCell.flagged) {
+                        adjCell.revealed = true;
+                        this.cellsRemaining--;
+                        this.renderCell(r, c);
+
+                        if (adjCell.adjacentMines === 0) {
+                            this.revealAdjacentCells(r, c);
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    // Toggle flag on cell
+    toggleFlag(row, col) {
+        if (this.gameOver) return;
+
+        const cell = this.board[row][col];
+        if (cell.revealed) return;
+
+        cell.flagged = !cell.flagged;
+        this.minesRemaining += cell.flagged ? -1 : 1;
+
+        this.updateStats();
+        this.renderCell(row, col);
+    },
+
+    // End the game
+    endGame(won, explodedRow = -1, explodedCol = -1) {
+        this.gameOver = true;
+        this.gameWon = won;
+
+        // Stop timer
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+
+        // Reveal all mines
+        for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+                if (this.board[r][c].mine) {
+                    this.board[r][c].revealed = true;
+                }
+            }
+        }
+
+        // Update game status
+        const statusEl = document.getElementById('game-status');
+        if (statusEl) {
+            statusEl.querySelector('.game-status__icon').textContent = won ? '🎉' : '💥';
+            statusEl.querySelector('.game-status__text').textContent = won ? 'Victory!' : 'Game Over';
+        }
+
+        // Re-render board to show mines
+        this.render();
+
+        // Mark exploded mine
+        if (!won && explodedRow >= 0) {
+            const cellId = `cell-${explodedRow}-${explodedCol}`;
+            const cellEl = document.getElementById(cellId);
+            if (cellEl) {
+                cellEl.classList.add('cell--mine-exploded');
+            }
+        }
+
+        // Show modal after a short delay
+        setTimeout(() => {
+            this.showModal(won);
+        }, 500);
+
+        // Update stats
+        if (won) {
+            this.updatePlayerStats(true);
+        } else {
+            this.updatePlayerStats(false);
+        }
+    },
+
+    // Update player statistics in localStorage
+    updatePlayerStats(won) {
+        let stats = JSON.parse(localStorage.getItem('gameStats') || '{}');
+        stats.gamesPlayed = (stats.gamesPlayed || 0) + 1;
+        if (won) {
+            stats.wins = (stats.wins || 0) + 1;
+            const bestTime = stats.bestTime || 9999;
+            if (this.seconds < bestTime) {
+                stats.bestTime = this.seconds;
+            }
+        }
+        stats.winRate = Math.round((stats.wins || 0) / stats.gamesPlayed * 100);
+        localStorage.setItem('gameStats', JSON.stringify(stats));
+    },
+
+    // Timer functions
+    startTimer() {
+        this.timer = setInterval(() => {
+            this.seconds++;
+            this.updateTimerDisplay();
+        }, 1000);
+    },
+
+    updateTimerDisplay() {
+        const minutes = Math.floor(this.seconds / 60);
+        const secs = this.seconds % 60;
+        const display = `${minutes}:${secs.toString().padStart(2, '0')}`;
+        const timerEl = document.getElementById('game-timer');
+        if (timerEl) timerEl.textContent = display;
+    },
+
+    // Update stats display
+    updateStats() {
+        const minesEl = document.getElementById('mines-remaining');
+        const cellsEl = document.getElementById('cells-remaining');
+
+        if (minesEl) minesEl.textContent = this.minesRemaining;
+        if (cellsEl) cellsEl.textContent = this.cellsRemaining;
+    },
+
+    updateDifficultyBadge(name) {
+        const badgeEl = document.getElementById('game-difficulty-badge');
+        if (badgeEl) badgeEl.textContent = name;
+    },
+
+    // Render the game board
+    render() {
+        const boardEl = document.getElementById('game-board');
+        if (!boardEl) return;
+
+        boardEl.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
+        boardEl.innerHTML = '';
+
+        for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+                const cell = this.board[r][c];
+                const cellEl = document.createElement('div');
+                cellEl.id = `cell-${r}-${c}`;
+                cellEl.className = 'cell';
+
+                if (cell.revealed) {
+                    cellEl.classList.add('cell--revealed');
+                    if (cell.mine) {
+                        cellEl.classList.add('cell--mine');
+                        cellEl.textContent = '💣';
+                    } else if (cell.adjacentMines > 0) {
+                        cellEl.classList.add(`cell--${cell.adjacentMines}`);
+                        cellEl.textContent = cell.adjacentMines;
+                    }
+                } else if (cell.flagged) {
+                    cellEl.classList.add('cell--flagged');
+                    cellEl.textContent = '🚩';
+                }
+
+                // Event listeners
+                cellEl.addEventListener('click', () => this.revealCell(r, c));
+                cellEl.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    this.toggleFlag(r, c);
+                });
+
+                boardEl.appendChild(cellEl);
+            }
+        }
+
+        // Reset game status
+        const statusEl = document.getElementById('game-status');
+        if (statusEl && !this.gameOver) {
+            statusEl.querySelector('.game-status__icon').textContent = '🎮';
+            statusEl.querySelector('.game-status__text').textContent = 'Playing...';
+        }
+    },
+
+    // Render a single cell (for performance)
+    renderCell(row, col) {
+        const cellEl = document.getElementById(`cell-${row}-${col}`);
+        if (!cellEl) return;
+
+        const cell = this.board[row][col];
+        cellEl.className = 'cell';
+
+        if (cell.revealed) {
+            cellEl.classList.add('cell--revealed');
+            if (cell.mine) {
+                cellEl.classList.add('cell--mine');
+                cellEl.textContent = '💣';
+            } else if (cell.adjacentMines > 0) {
+                cellEl.classList.add(`cell--${cell.adjacentMines}`);
+                cellEl.textContent = cell.adjacentMines;
+            } else {
+                cellEl.textContent = '';
+            }
+        } else if (cell.flagged) {
+            cellEl.classList.add('cell--flagged');
+            cellEl.textContent = '🚩';
+        } else {
+            cellEl.textContent = '';
+        }
+    },
+
+    // Show game over modal
+    showModal(won) {
+        const modal = document.getElementById('game-modal');
+        const iconEl = document.getElementById('game-modal-icon');
+        const titleEl = document.getElementById('game-modal-title');
+        const textEl = document.getElementById('game-modal-text');
+        const timeEl = document.getElementById('modal-time');
+        const clicksEl = document.getElementById('modal-clicks');
+
+        if (!modal) return;
+
+        const minutes = Math.floor(this.seconds / 60);
+        const secs = this.seconds % 60;
+        const timeStr = `${minutes}:${secs.toString().padStart(2, '0')}`;
+
+        if (won) {
+            iconEl.textContent = '🎉';
+            titleEl.textContent = 'Victory!';
+            titleEl.style.color = 'var(--color-success)';
+            textEl.textContent = `Amazing! You cleared the board in ${timeStr}!`;
+        } else {
+            iconEl.textContent = '💥';
+            titleEl.textContent = 'Game Over';
+            titleEl.style.color = 'var(--color-danger)';
+            textEl.textContent = 'You hit a mine! Better luck next time.';
+        }
+
+        timeEl.textContent = timeStr;
+        clicksEl.textContent = this.clicks;
+
+        modal.classList.remove('hidden');
+    },
+
+    hideModal() {
+        const modal = document.getElementById('game-modal');
+        if (modal) modal.classList.add('hidden');
+    },
+
+    // Restart game with same settings
+    restart() {
+        this.hideModal();
+        this.init(App.gameSettings.difficulty);
+    },
+
+    // Exit game and go back to lobby
+    exitGame() {
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+        this.hideModal();
+        Router.navigate('play');
+    },
+
+    // Start a new game from the lobby
+    startGame(difficulty, playerName) {
+        App.gameSettings.difficulty = difficulty;
+        App.gameSettings.playerName = playerName;
+        Router.navigate('game');
+
+        // Initialize game after navigation
+        setTimeout(() => {
+            this.init(difficulty);
+        }, 100);
     },
 };
 
@@ -162,12 +583,10 @@ const UI = {
                 const item = header.parentElement;
                 const wasActive = item.classList.contains('active');
 
-                // Close all items
                 document.querySelectorAll('.accordion-item').forEach(i => {
                     i.classList.remove('active');
                 });
 
-                // Toggle clicked item
                 if (!wasActive) {
                     item.classList.add('active');
                 }
@@ -206,37 +625,29 @@ const UI = {
 
     handleCreateGame(formData) {
         const playerName = formData.get('playerName') || 'Player';
-        const difficulty = formData.get('difficulty') || 'medium';
+        const difficulty = formData.get('difficulty') || 'intermediate';
 
-        // Validate
         if (playerName.trim().length < 2) {
             this.showToast('Please enter a valid name (at least 2 characters)', 'error');
             return;
         }
 
-        // Generate mock game code
-        const gameCode = this.generateGameCode();
-
-        // Save to localStorage
+        // Save player name
         localStorage.setItem('playerName', playerName);
-        localStorage.setItem('lastGameCode', gameCode);
 
-        // Show success with game code
-        this.showToast(`Game created! Your code: ${gameCode}`, 'success');
+        // Show toast and start game
+        this.showToast('Starting game...', 'success');
 
-        // Show the game code in a more visible way
-        const codeDisplay = document.getElementById('game-code-display');
-        if (codeDisplay) {
-            codeDisplay.querySelector('.game-code').textContent = gameCode;
-            codeDisplay.classList.remove('hidden');
-        }
+        // Start the actual game
+        setTimeout(() => {
+            Game.startGame(difficulty, playerName);
+        }, 500);
     },
 
     handleJoinGame(formData) {
         const gameCode = formData.get('gameCode');
         const playerName = formData.get('playerNameJoin') || localStorage.getItem('playerName') || 'Player';
 
-        // Validate game code format
         if (!gameCode || gameCode.length !== 6) {
             this.showToast('Please enter a valid 6-character game code', 'error');
             return;
@@ -245,13 +656,14 @@ const UI = {
         // Save player name
         localStorage.setItem('playerName', playerName);
 
-        // Mock joining (in real app, this would connect to the host)
-        this.showToast(`Connecting to game ${gameCode.toUpperCase()}...`, 'info');
+        // Show connecting message
+        this.showToast(`Joining game ${gameCode.toUpperCase()}...`, 'info');
 
-        // Simulate connection
+        // Start the game (in a real app, this would connect to host via WebRTC)
         setTimeout(() => {
-            this.showToast('This is a demo. In the full game, you\'d connect to the host now!', 'success');
-        }, 1500);
+            this.showToast('Game joined successfully!', 'success');
+            Game.startGame('intermediate', playerName);
+        }, 1000);
     },
 
     handleUpdateProfile(formData) {
@@ -268,7 +680,7 @@ const UI = {
     },
 
     generateGameCode() {
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluding confusing chars
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         let code = '';
         for (let i = 0; i < 6; i++) {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -277,11 +689,23 @@ const UI = {
     },
 
     loadUserData() {
-        // Load from localStorage or use mock data
         const savedName = localStorage.getItem('playerName');
         if (savedName) {
             MockData.user.username = savedName;
             MockData.user.avatar = savedName.substring(0, 2).toUpperCase();
+        }
+
+        // Load actual game stats from localStorage
+        const savedStats = JSON.parse(localStorage.getItem('gameStats') || '{}');
+        if (savedStats.gamesPlayed) {
+            MockData.user.stats.gamesPlayed = savedStats.gamesPlayed;
+            MockData.user.stats.wins = savedStats.wins || 0;
+            MockData.user.stats.winRate = savedStats.winRate || 0;
+            if (savedStats.bestTime) {
+                const mins = Math.floor(savedStats.bestTime / 60);
+                const secs = savedStats.bestTime % 60;
+                MockData.user.stats.bestTime = `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
         }
 
         // Update profile UI
@@ -293,14 +717,18 @@ const UI = {
         if (profileAvatar) profileAvatar.textContent = MockData.user.avatar;
         if (profileInput) profileInput.value = MockData.user.username;
 
-        // Update stats
+        // Pre-fill play form inputs
+        const playerNameInput = document.getElementById('player-name');
+        const playerNameJoinInput = document.getElementById('player-name-join');
+        if (playerNameInput && savedName) playerNameInput.value = savedName;
+        if (playerNameJoinInput && savedName) playerNameJoinInput.value = savedName;
+
         this.renderStats();
     },
 
     renderStats() {
         const stats = MockData.user.stats;
 
-        // Update stat values
         const statElements = {
             'stat-games': stats.gamesPlayed,
             'stat-wins': stats.wins,
@@ -320,7 +748,6 @@ const UI = {
         const grid = document.getElementById('mini-grid');
         if (!grid) return;
 
-        // Generate a sample minesweeper grid
         const gridData = this.generateMiniGridData();
         grid.innerHTML = gridData.map((cell, i) => {
             let className = 'mini-cell';
@@ -344,7 +771,6 @@ const UI = {
             return `<div class="${className}">${content}</div>`;
         }).join('');
 
-        // Animate cells appearing
         const cells = grid.querySelectorAll('.mini-cell');
         cells.forEach((cell, i) => {
             cell.style.opacity = '0';
@@ -358,9 +784,8 @@ const UI = {
     },
 
     generateMiniGridData() {
-        // Create a mix of revealed numbers, flags, and hidden cells
         const data = [];
-        const totalCells = 48; // 8x6 or 6x8 grid
+        const totalCells = 48;
 
         for (let i = 0; i < totalCells; i++) {
             const rand = Math.random();
@@ -385,11 +810,9 @@ const UI = {
     },
 
     showToast(message, type = 'info') {
-        // Remove existing toast
         const existing = document.querySelector('.toast');
         if (existing) existing.remove();
 
-        // Create toast
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.innerHTML = `
@@ -397,7 +820,6 @@ const UI = {
       <span class="toast-message">${message}</span>
     `;
 
-        // Style based on type
         if (type === 'success') {
             toast.style.borderColor = 'var(--color-success)';
         } else if (type === 'error') {
@@ -406,16 +828,14 @@ const UI = {
 
         document.body.appendChild(toast);
 
-        // Animate in
         requestAnimationFrame(() => {
             toast.classList.add('visible');
         });
 
-        // Remove after delay
         setTimeout(() => {
             toast.classList.remove('visible');
             setTimeout(() => toast.remove(), 300);
-        }, 4000);
+        }, 3000);
     },
 
     getToastIcon(type) {
@@ -452,7 +872,6 @@ const FAQ = {
       </div>
     `).join('');
 
-        // Re-init accordion after render
         UI.initAccordion();
     },
 };
@@ -480,7 +899,6 @@ document.addEventListener('DOMContentLoaded', () => {
     UI.init();
     FAQ.init();
 
-    // Set initial view if no hash
     if (!window.location.hash) {
         window.location.hash = '/home';
     }
@@ -490,9 +908,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // KEYBOARD NAVIGATION
 // ============================================
 document.addEventListener('keydown', (e) => {
-    // Close mobile nav on Escape
-    if (e.key === 'Escape' && App.isNavOpen) {
-        UI.closeNav();
+    if (e.key === 'Escape') {
+        if (App.isNavOpen) {
+            UI.closeNav();
+        }
+        // Close game modal on escape
+        if (App.currentView === 'game') {
+            Game.hideModal();
+        }
     }
 });
 
@@ -513,5 +936,4 @@ const observeElements = () => {
     });
 };
 
-// Run after initial load
 window.addEventListener('load', observeElements);
