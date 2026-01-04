@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Minesweeper Duel - Competitive 1v1 multiplayer Minesweeper. Host your own games, challenge friends, and climb the ranks. Free, fast, and player-hosted.">
+  <meta name="keywords" content="minesweeper, multiplayer, 1v1, competitive, puzzle game, free game, online game">
+  <meta name="author" content="Minesweeper Duel">
+  <meta name="theme-color" content="#0a0a0f">
+  
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Minesweeper Duel - Competitive 1v1 Multiplayer">
+  <meta property="og:description" content="Challenge friends to competitive Minesweeper matches. Host your own games, no servers needed.">
+  <meta property="og:image" content="assets/images/og-image.png">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Minesweeper Duel">
+  <meta name="twitter:description" content="Competitive 1v1 multiplayer Minesweeper. Free and player-hosted.">
+  
+  <title>Minesweeper Duel - Competitive 1v1 Multiplayer</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0a0f' width='100' height='100' rx='20'/><text y='.9em' font-size='80' x='12'>💣</text></svg>">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <!-- Skip Link for Accessibility -->
+  <a href="#main-content" class="sr-only">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__container">
+      <a href="#/home" class="nav__logo" aria-label="Minesweeper Duel Home">
+        <span class="nav__logo-icon">💣</span>
+        <span>Minesweeper Duel</span>
+      </a>
+      
+      <button class="nav__toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      
+      <ul class="nav__links" id="nav-links">
+        <li><a href="#/home" class="nav__link nav__link--active">Home</a></li>
+        <li><a href="#/how-it-works" class="nav__link">How It Works</a></li>
+        <li><a href="#/play" class="nav__link">Play</a></li>
+        <li><a href="#/profile" class="nav__link">Profile</a></li>
+        <li><a href="#/faq" class="nav__link">FAQ</a></li>
+        <li class="nav__cta">
+          <a href="#/play" class="btn btn--primary">Play Now</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main-content">
+    
+    <!-- ============================================ -->
+    <!-- HOME VIEW -->
+    <!-- ============================================ -->
+    <div id="view-home" class="view active">
+      <!-- Hero Section -->
+      <section class="section section--hero">
+        <div class="container">
+          <div class="hero">
+            <span class="badge badge--primary hero__badge">Free & Open Source</span>
+            
+            <h1 class="hero__title">Minesweeper Duel</h1>
+            
+            <p class="hero__subtitle">
+              Challenge friends to competitive 1v1 Minesweeper matches. 
+              Race to clear your board first — or watch your opponent hit a mine.
+            </p>
+            
+            <div class="hero__actions">
+              <a href="#/play" class="btn btn--primary btn--lg">
+                <span>▶</span> Play Now
+              </a>
+              <a href="#/how-it-works" class="btn btn--secondary btn--lg">
+                Learn How It Works
+              </a>
+            </div>
+            
+            <!-- Game Preview Visual -->
+            <div class="hero__visual">
+              <div class="game-preview">
+                <div class="game-preview__inner">
+                  <div class="game-preview__header">
+                    <div class="player-info">
+                      <div class="player-avatar">PS</div>
+                      <div>
+                        <div class="player-name">ProSweeper</div>
+                        <div class="player-rank">💎 Diamond III</div>
+                      </div>
+                    </div>
+                    <div class="vs-badge">VS</div>
+                    <div class="player-info">
+                      <div class="player-avatar" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);">MK</div>
+                      <div>
+                        <div class="player-name">MineKing</div>
+                        <div class="player-rank">🥇 Gold I</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mini-grid" id="mini-grid">
+                    <!-- Generated by JavaScript -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="section">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-header__eyebrow">Why Minesweeper Duel?</span>
+            <h2 class="section-header__title">The Classic Game, Reimagined</h2>
+            <p class="section-header__text">
+              Turn the solitary puzzle into an intense head-to-head competition.
+            </p>
+          </div>
+          
+          <div class="features-grid">
+            <div class="card">
+              <div class="card__icon">⚔️</div>
+              <h3 class="card__title">1v1 Competitive</h3>
+              <p class="card__text">
+                Race against a real opponent. Both players solve the same board — 
+                first to clear wins, or outlast someone who hits a mine.
+              </p>
+            </div>
+            
+            <div class="card">
+              <div class="card__icon">🌐</div>
+              <h3 class="card__title">Player-Hosted</h3>
+              <p class="card__text">
+                No central servers means no costs. Host games on your own machine 
+                and share a simple code with friends. It's free forever.
+              </p>
+            </div>
+            
+            <div class="card">
+              <div class="card__icon">🏆</div>
+              <h3 class="card__title">Ranked Matches</h3>
+              <p class="card__text">
+                Track your wins, climb the ranks, and show off your badge. 
+                From Bronze to Champion, prove you're the best sweeper.
+              </p>
+            </div>
+            
+            <div class="card">
+              <div class="card__icon">⚡</div>
+              <h3 class="card__title">Lightning Fast</h3>
+              <p class="card__text">
+                Lightweight and optimized. No downloads, no installations. 
+                Works in any modern browser instantly.
+              </p>
+            </div>
+            
+            <div class="card">
+              <div class="card__icon">🔒</div>
+              <h3 class="card__title">Private & Secure</h3>
+              <p class="card__text">
+                Direct peer-to-peer connections. Your games stay between you 
+                and your opponent. No tracking, no data collection.
+              </p>
+            </div>
+            
+            <div class="card">
+              <div class="card__icon">🎮</div>
+              <h3 class="card__title">Multiple Difficulties</h3>
+              <p class="card__text">
+                Choose from Beginner, Intermediate, or Expert boards. 
+                Or create custom games with your preferred grid size and mine count.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Section -->
+      <section class="section">
+        <div class="container">
+          <div class="card" style="text-align: center; padding: var(--space-12); max-width: 700px; margin: 0 auto; background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(123, 92, 255, 0.08) 100%);">
+            <h2 style="margin-bottom: var(--space-4);">Ready to Compete?</h2>
+            <p style="margin-bottom: var(--space-6);">
+              Create a game in seconds and challenge your friends to a Minesweeper showdown.
+            </p>
+            <a href="#/play" class="btn btn--primary btn--lg">Start Playing</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- HOW IT WORKS VIEW -->
+    <!-- ============================================ -->
+    <div id="view-how-it-works" class="view">
+      <section class="section" style="padding-top: 120px;">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-header__eyebrow">Player-Hosted Gaming</span>
+            <h1 class="section-header__title">How It Works</h1>
+            <p class="section-header__text">
+              Minesweeper Duel uses peer-to-peer technology so you can play with friends without relying on expensive game servers.
+            </p>
+          </div>
+
+          <!-- Step-by-step explanation -->
+          <div class="features-grid" style="max-width: 900px; margin: 0 auto var(--space-12);">
+            <div class="card">
+              <div class="card__icon" style="background: rgba(0, 230, 118, 0.1);">1️⃣</div>
+              <h3 class="card__title">Create a Game</h3>
+              <p class="card__text">
+                Click "Create Game" and choose your settings. You'll get a unique 6-character code 
+                that lets others join your match.
+              </p>
+            </div>
+            
+            <div class="card">
+              <div class="card__icon" style="background: rgba(64, 196, 255, 0.1);">2️⃣</div>
+              <h3 class="card__title">Share Your Code</h3>
+              <p class="card__text">
+                Send the game code to a friend via Discord, text, email — whatever works. 
+                They enter the code on their end.
+              </p>
+            </div>
+            
+            <div class="card">
+              <div class="card__icon" style="background: rgba(123, 92, 255, 0.1);">3️⃣</div>
+              <h3 class="card__title">Start Sweeping</h3>
+              <p class="card__text">
+                Once connected, both players see the same Minesweeper board. 
+                Race to clear it first and claim victory!
+              </p>
+            </div>
+          </div>
+
+          <!-- Benefits Section -->
+          <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <h3 style="margin-bottom: var(--space-6); font-size: var(--text-xl);">
+              🎯 Why Player-Hosted?
+            </h3>
+            
+            <div style="display: grid; gap: var(--space-5);">
+              <div style="display: flex; gap: var(--space-4); align-items: flex-start;">
+                <span style="color: var(--color-success); font-size: 1.4rem;">✓</span>
+                <div>
+                  <strong>Completely Free</strong>
+                  <p style="margin: var(--space-1) 0 0; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                    No server costs means no subscriptions, no ads, no premium tiers. Free forever.
+                  </p>
+                </div>
+              </div>
+              
+              <div style="display: flex; gap: var(--space-4); align-items: flex-start;">
+                <span style="color: var(--color-success); font-size: 1.4rem;">✓</span>
+                <div>
+                  <strong>Better Privacy</strong>
+                  <p style="margin: var(--space-1) 0 0; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                    Your game data goes directly between you and your opponent. We never see or store your matches.
+                  </p>
+                </div>
+              </div>
+              
+              <div style="display: flex; gap: var(--space-4); align-items: flex-start;">
+                <span style="color: var(--color-success); font-size: 1.4rem;">✓</span>
+                <div>
+                  <strong>Low Latency</strong>
+                  <p style="margin: var(--space-1) 0 0; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                    Direct connections often mean faster response times than going through a central server.
+                  </p>
+                </div>
+              </div>
+              
+              <div style="display: flex; gap: var(--space-4); align-items: flex-start;">
+                <span style="color: var(--color-success); font-size: 1.4rem;">✓</span>
+                <div>
+                  <strong>Always Available</strong>
+                  <p style="margin: var(--space-1) 0 0; color: var(--color-text-secondary); font-size: var(--text-sm);">
+                    No server downtime. As long as you and your friend are online, you can play.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technical Note -->
+          <div style="max-width: 600px; margin: var(--space-12) auto 0; text-align: center;">
+            <p style="color: var(--color-text-muted); font-size: var(--text-sm);">
+              <strong>Technical note:</strong> Minesweeper Duel uses WebRTC technology for peer-to-peer 
+              connections. A lightweight signaling server helps establish the initial connection, 
+              but all game data flows directly between players.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- PLAY VIEW -->
+    <!-- ============================================ -->
+    <div id="view-play" class="view">
+      <section class="section" style="padding-top: 120px;">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-header__eyebrow">Game Lobby</span>
+            <h1 class="section-header__title">Start Playing</h1>
+            <p class="section-header__text">
+              Create a new game and invite a friend, or join an existing match with a game code.
+            </p>
+          </div>
+
+          <div class="play-container">
+            <!-- Create Game Card -->
+            <div class="play-card">
+              <div class="play-card__icon">🎮</div>
+              <h2 class="play-card__title">Create Game</h2>
+              <p class="play-card__text">
+                Host a new match and share the code with your opponent.
+              </p>
+              
+              <form id="create-game-form">
+                <div class="form-group">
+                  <label class="form-label" for="player-name">Your Name</label>
+                  <input 
+                    type="text" 
+                    class="form-input" 
+                    id="player-name" 
+                    name="playerName" 
+                    placeholder="Enter your name"
+                    minlength="2"
+                    maxlength="20"
+                    required
+                  >
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="difficulty">Difficulty</label>
+                  <select class="form-input" id="difficulty" name="difficulty">
+                    <option value="beginner">Beginner (9×9, 10 mines)</option>
+                    <option value="intermediate" selected>Intermediate (16×16, 40 mines)</option>
+                    <option value="expert">Expert (30×16, 99 mines)</option>
+                  </select>
+                </div>
+                
+                <button type="submit" class="btn btn--primary btn--full btn--lg">
+                  Create Game
+                </button>
+              </form>
+
+              <!-- Game Code Display (hidden by default) -->
+              <div id="game-code-display" class="hidden" style="margin-top: var(--space-6); padding: var(--space-5); background: var(--color-bg-tertiary); border-radius: var(--radius-lg); text-align: center;">
+                <p style="color: var(--color-text-muted); font-size: var(--text-sm); margin-bottom: var(--space-2);">Share this code with your opponent:</p>
+                <div style="display: flex; align-items: center; justify-content: center; gap: var(--space-3);">
+                  <span class="game-code" style="font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: bold; color: var(--color-accent-primary); letter-spacing: 4px;">------</span>
+                  <button type="button" onclick="copyGameCode()" class="btn btn--secondary btn--sm">Copy</button>
+                </div>
+                <p style="color: var(--color-text-muted); font-size: var(--text-xs); margin-top: var(--space-3);">Waiting for opponent to join...</p>
+              </div>
+            </div>
+
+            <!-- Join Game Card -->
+            <div class="play-card">
+              <div class="play-card__icon" style="background: rgba(123, 92, 255, 0.1);">🔗</div>
+              <h2 class="play-card__title">Join Game</h2>
+              <p class="play-card__text">
+                Enter a game code to join an existing match.
+              </p>
+              
+              <form id="join-game-form">
+                <div class="form-group">
+                  <label class="form-label" for="player-name-join">Your Name</label>
+                  <input 
+                    type="text" 
+                    class="form-input" 
+                    id="player-name-join" 
+                    name="playerNameJoin" 
+                    placeholder="Enter your name"
+                    minlength="2"
+                    maxlength="20"
+                    required
+                  >
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="game-code">Game Code</label>
+                  <input 
+                    type="text" 
+                    class="form-input" 
+                    id="game-code" 
+                    name="gameCode" 
+                    placeholder="Enter 6-character code"
+                    pattern="[A-Za-z0-9]{6}"
+                    maxlength="6"
+                    style="font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 2px; text-align: center;"
+                    required
+                  >
+                  <p class="form-hint">Example: ABC123</p>
+                </div>
+                
+                <button type="submit" class="btn btn--primary btn--full btn--lg">
+                  Join Game
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Quick Tips -->
+          <div style="max-width: 600px; margin: var(--space-12) auto 0; text-align: center;">
+            <p style="color: var(--color-text-muted); font-size: var(--text-sm);">
+              <strong>💡 Tip:</strong> Your name is saved locally so you don't have to enter it every time.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- PROFILE VIEW -->
+    <!-- ============================================ -->
+    <div id="view-profile" class="view">
+      <section class="section" style="padding-top: 120px;">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-header__eyebrow">Your Stats</span>
+            <h1 class="section-header__title">Profile</h1>
+            <p class="section-header__text">
+              Track your progress and show off your rank.
+            </p>
+          </div>
+
+          <div class="profile-container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+              <div class="profile-avatar" id="profile-avatar">PS</div>
+              <div class="profile-info">
+                <h2 class="profile-name" id="profile-username">ProSweeper</h2>
+                <span class="badge badge--rank profile-rank-badge">
+                  <span>💎</span>
+                  <span>Diamond III</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div style="margin-bottom: var(--space-6);">
+              <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-4);">Statistics</h3>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-value" id="stat-games">247</div>
+                  <div class="stat-label">Games Played</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value" id="stat-wins">158</div>
+                  <div class="stat-label">Wins</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value" id="stat-winrate">64%</div>
+                  <div class="stat-label">Win Rate</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value" id="stat-avgtime">1:42</div>
+                  <div class="stat-label">Avg Time</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value" id="stat-besttime">0:38</div>
+                  <div class="stat-label">Best Time</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value" id="stat-streak">5</div>
+                  <div class="stat-label">Current Streak</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rank Progress -->
+            <div class="card" style="margin-bottom: var(--space-6);">
+              <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-4);">Rank Progress</h3>
+              <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-3);">
+                <span style="font-size: 1.5rem;">💎</span>
+                <div style="flex: 1;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2);">
+                    <span style="font-size: var(--text-sm); font-weight: var(--weight-semibold);">Diamond III</span>
+                    <span style="font-size: var(--text-sm); color: var(--color-text-muted);">Diamond II</span>
+                  </div>
+                  <div style="height: 8px; background: var(--color-bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
+                    <div style="height: 100%; width: 65%; background: var(--color-accent-gradient); border-radius: var(--radius-full);"></div>
+                  </div>
+                </div>
+                <span style="font-size: 1.5rem; opacity: 0.5;">💎</span>
+              </div>
+              <p style="color: var(--color-text-muted); font-size: var(--text-sm); text-align: center;">
+                12 more wins to reach Diamond II
+              </p>
+            </div>
+
+            <!-- Edit Profile -->
+            <div class="card card--flat">
+              <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-4);">Edit Profile</h3>
+              <form id="profile-form">
+                <div class="form-group">
+                  <label class="form-label" for="username-input">Username</label>
+                  <input 
+                    type="text" 
+                    class="form-input" 
+                    id="username-input" 
+                    name="username" 
+                    placeholder="Enter username"
+                    minlength="2"
+                    maxlength="20"
+                  >
+                </div>
+                <button type="submit" class="btn btn--secondary">Save Changes</button>
+              </form>
+            </div>
+
+            <!-- Data Notice -->
+            <div style="margin-top: var(--space-6); text-align: center;">
+              <p style="color: var(--color-text-muted); font-size: var(--text-xs);">
+                📱 Stats shown are demo data. In the full game, your stats would be saved locally 
+                and synced optionally.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FAQ VIEW -->
+    <!-- ============================================ -->
+    <div id="view-faq" class="view">
+      <section class="section" style="padding-top: 120px;">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-header__eyebrow">Get Help</span>
+            <h1 class="section-header__title">Frequently Asked Questions</h1>
+            <p class="section-header__text">
+              Everything you need to know about Minesweeper Duel.
+            </p>
+          </div>
+
+          <div class="accordion" id="faq-accordion" style="max-width: 800px; margin: 0 auto;">
+            <!-- FAQ items are rendered by JavaScript -->
+          </div>
+
+          <!-- Contact Section -->
+          <div class="card" style="max-width: 600px; margin: var(--space-12) auto 0; text-align: center;">
+            <h3 style="margin-bottom: var(--space-3);">Still have questions?</h3>
+            <p style="color: var(--color-text-secondary); margin-bottom: var(--space-5);">
+              We're here to help. Reach out and we'll get back to you as soon as we can.
+            </p>
+            <a href="mailto:support@minesweeperduel.com" class="btn btn--secondary">
+              📧 Contact Support
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__logo">
+          <span>💣</span>
+          <span>Minesweeper Duel</span>
+        </div>
+        
+        <ul class="footer__links">
+          <li><a href="#/home" class="footer__link">Home</a></li>
+          <li><a href="#/how-it-works" class="footer__link">How It Works</a></li>
+          <li><a href="#/play" class="footer__link">Play</a></li>
+          <li><a href="#/faq" class="footer__link">FAQ</a></li>
+        </ul>
+        
+        <p class="footer__copy">
+          &copy; 2025 Minesweeper Duel. Free and open source. No servers required.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

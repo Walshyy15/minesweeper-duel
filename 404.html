@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper Duel</title>
+    <script>
+        // GitHub Pages SPA redirect
+        // This file handles 404s by redirecting to index.html with the path as a hash
+        const path = window.location.pathname;
+        const hash = '#' + path.replace(/^\/minesweeper-duel/, '').replace(/\/$/, '') || '/home';
+        window.location.replace('/' + 'minesweeper-duel/' + '?' + hash);
+    </script>
+    <meta http-equiv="refresh" content="0;url=index.html">
+</head>
+
+<body>
+    <p>Redirecting to <a href="index.html">Minesweeper Duel</a>...</p>
+</body>
+
+</html>
